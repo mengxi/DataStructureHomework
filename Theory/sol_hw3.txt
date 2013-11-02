@@ -1,0 +1,138 @@
+****************************************
+
+Problem 1:
+
+a. Suppose linked list is used for the chaining
+1: 3471
+3: 3123 -> 1673
+4: 3444
+9: 1499 -> 6979 -> 8989 
+
+
+b. Suppose H + i, i = 1,2,... is the probing sequence
+0: 6979
+1: 3471
+2: 8989
+3: 3123
+4: 1673
+5: 3444
+9: 1499
+
+
+c. Suppose H + i^2, i=1,2,... is the probing sequence. 
+0: 6979
+1: 3471
+3: 3123
+4: 1673
+5: 3444
+8: 8989
+9: 1499
+
+d. The probing sequence is h1(x) + j * h2(x)
+0: 1673
+1: 3471
+3: 3123
+4: 3444
+5: 8989
+6: 6979
+9: 1499
+
+
+****************************************
+Problem 2:
+Yes
+
+One simple way is that: choose a value T which is larger than all keys. Then useing h(x) = x mod T as a hash function
+
+Another way is to use a perfect hash function mapping all n keys to n consecutive integers. 
+
+I did not find general and simple ways to generate perfect hash functions. Perfect hash functions have to be related to the exact key sets. Refer to http://burtleburtle.net/bob/hash/perfect.html#pointer for a method of building perfect hash tables in a parallel way. 
+
+****************************************
+Problem 3:
+
+Attached behind
+****************************************
+Problem 4:
+
+Compare separate chaining with linear probing:
+
+Separate chaining
+  Advantages: chained hash tables remain effective even when the number of table entries n is much higher than the number of slots. Their performance degrades more gracefully (linearly) with the load factor. 
+
+  Disadvantages: chained hash tables use more memories, and is less efficient in the necessity of allocating new spaces. For separate-chaining, the worst-case scenario is when all entries are inserted into the same bucket, in which case the hash table is ineffective and the cost is that of searching the whole data.
+
+
+Open addressing:
+  Advantages: it saves more space if items stored in the hash table are small. It saves the time to allocate new memories. Open addressing avoids the time overhead of allocating each new entry record, and can be implemented even in the absence of a memory allocator. It also avoids the extra indirection required to access the first entry of each bucket. Hash tables with open addressing are also easier to serialize, because they do not use pointers.
+
+
+  Disadvantages: it is less efficient if items stored are large because all items need to be copied into the hash table. One drawback is that the number of stored entries cannot exceed the number of slots in the bucket array. 
+  In fact, even with good hash functions, their performance dramatically degrades when the load factor grows beyond 0.7 or so. 
+  Open addressing schemes also put more stringent requirements on the hash function: besides distributing the keys more uniformly over the buckets, the function must also minimize the clustering of hash values that are consecutive in the probe order. Using separate chaining, the only concern is that too many objects map to the same hash value; whether they are adjacent or nearby is completely irrelevant. 
+
+****************************************
+Problem 5:
+
+Consider a Hashtable using separate chaining. Suppose at location 0 there are 4 values inserted:
+a -> b -> c -> d
+Suppose a and b are deleted using laze deletion, location 0 becomes:
+a(del) -> b(del) -> c -> d
+Suppose now you need to insert value c, it is found that location 0 is empty (deleted), so the algorithm stops and a is replaced by c, the linked list in location 0 becomes:
+c -> b(del) -> c -> d
+
+We can see that value c is inserted twice in the hash table! 
+
+The same problem exists for Hash table using probing, that is, the same values may be inserted multiple times into the table.
+
+****************************************
+Problem 6:
+
+It is still O(n log n). The reason is as follows:
+
+1, Suppose we want to build a max-heap so that we can sort the values from small to large. It takes O(n log n) time to re-build the max-heap from an ascending order array because values in the end has to be rolled up to the front. After that, everything is similar to a normal Heapsort, so the runtime is O(n log n)
+
+2, Suppose we want to build a min-heap so that we can sort the values from large to small. It takes O(n) time to find out that the original array is already a min-heap, after that, every time a min value is taken out, to maintain the min-heap structure, O(log n) runtime has to be taken, so finally it still needs O(n log n) runtime.
+
+****************************************
+Problem 7:
+Insertion sort: stable, because items are inserted one by one, with order preserved.
+
+Selection sort: not stable in a array, because items in the beginning are swapped with items chosen, which may deteriorate the order. However, it can be implemented in a stable way, given that the minimum value is inserted instead of swapped into the first position. But that requires a data structure supporting efficient insertion.
+
+Bubble sort: stable. Because items does not need to be swapped if they are equal, which preserves their order.
+
+Merge sort: stable. Because when items are merged their order can be preserved if their values are the same.
+
+Heap sort: unstable. Because building a heap can deteriorate the order of same values, especially when the two values are stored in different branches of the heap.
+
+Quick sort: unstable. Because when a pivot is picked randomly from the list, and put it back into its final position after separating all remaining values, the order of the pivot and another same value may be changed. However, it can be implemented in a stable way with performance sacrificed.
+
+****************************************
+Problem 8:
+
+Hash table:
+  Advantage: O(1) access, insert and delete. Easy to mange.
+  Disadvantage: Lots of extra spaces needed. 
+
+AVL trees:
+  Advantage: save space. i
+  Disadvantage: hard to manage. O(log n) access, insert and delete.
+
+****************************************
+Problem 9:
+
+It takes O(nlog n) for Huffman tree compression, where n is the number of symbols, because building a Huffman tree needs combining nodes with lowest probabilities. If all symbols are sorted according to their probabilities, then a O(n) algorithm can be found for Huffman tree compression.
+
+For decompression, find one symbol takes on average O(log n) operations, so decompress all n symbols need O(n log n) operations as well.
+
+
+****************************************
+Problem 10:
+
+This problem is super hard....
+
+What I can think is to re-build a max-heap, which takes O(n) runtime if trees are built from bottom to up, by rolling each root of the sub-tree down: See
+http://en.wikipedia.org/wiki/Binary_heap#Building_a_heap
+for the proof of complexity of the algorithm.
+

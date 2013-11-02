@@ -1,0 +1,31 @@
+Problem 5:
+
+Consider a Hashtable using separate chaining. Suppose at location 0 there are 4 values inserted:
+a -> b -> c -> d
+Suppose a and b are deleted using laze deletion, location 0 becomes:
+a(del) -> b(del) -> c -> d
+Suppose now you need to insert value c, it is found that location 0 is empty (deleted), so the algorithm stops and a is replaced by c, the linked list in location 0 becomes:
+c -> b(del) -> c -> d
+
+We can see that value c is inserted twice in the hash table! 
+
+The same problem exists for Hash table using probing, that is, the same values may be inserted multiple times into the table.
+
+
+
+Problem 6:
+
+It is still O(n log n). The reason is as follows:
+
+1, Suppose we want to build a max-heap so that we can sort the values from small to large. It takes O(n log n) time to re-build the max-heap from an ascending order array because values in the end has to be rolled up to the front. After that, everything is similar to a normal Heapsort, so the runtime is O(n log n)
+
+2, Suppose we want to build a min-heap so that we can sort the values from large to small. It takes O(n) time to find out that the original array is already a min-heap, after that, every time a min value is taken out, to maintain the min-heap structure, O(log n) runtime has to be taken, so finally it still needs O(n log n) runtime.
+
+Problem 10:
+
+This problem is super hard....
+
+What I can think is to re-build a max-heap, which takes O(n) runtime if trees are built from bottom to up, by rolling each root of the sub-tree down: See
+http://en.wikipedia.org/wiki/Binary_heap#Building_a_heap
+for the proof of complexity of the algorithm.
+
