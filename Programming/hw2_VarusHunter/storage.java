@@ -7,8 +7,7 @@ import java.util.*;
 
 package hw2_VarusHunter
 
-/* The dictionary storing # of bytes seen in a type of programs
- * */
+// The dictionary storing # of bytes seen in a type of programs
 class BytesDistProgram
 {
   private Map<String, Integer> dist;
@@ -44,15 +43,15 @@ class ReadWriteFile
   String file;
   int max_bytes = 300; // max one time read-write.
 
-  public String Read(){
+  public String read(){
     // read max_bytes from file.
   }
 
-  public void Write(String str){
+  public void write(String str){
     // write str to file.
   }
 
-  public void Close(){
+  public void close(){
     // close file.
   }
 
@@ -66,7 +65,7 @@ class ReadWriteFile
 }
 
 
-public class VirusFile
+public class VirusDatabase
 {
   BytesDistProgram benigh;
   BytesDistProgram virus;
@@ -89,22 +88,49 @@ public class VirusFile
     ReadWriteFile input = new ReadWriteFile(file);
     String str = '';
     do{
-      String read_str = input.Read();
+      String read_str = input.read();
       str = this._substring(str, - this.key_len + 1) + 
             read_str;
       for(int i = 0; i <= str.length() - this.key_len; i++){
-        data.add(this._substring(str, i));
+        data.add(str.substring(i, i+this.key_len));
       }
     }while(read_str.length() > 0);
-    input.Close();
+    input.close();
   }
 
-  public void AddBenighFile(String file){
+  public void addBenighFile(String file){
     this._AddFile(file, this.benigh);
   }
 
-  public void AddVirusFile(String file){
+  public void addVirusFile(String file){
     this._AddFile(file, this.virus);
+  }
+  
+  public String saveDatabase(String file=null){
+    // save database to file
+    // Args:
+    //   file: write file name, select a random one if null
+    // Return:
+    //   Saved file name
+  }
+
+  public boolean loadDatabase(String file){
+    // Read database from file.
+    // Args:
+    //   file: name of file storing database
+    // Return:
+    //   True if success, false otherwise
+  }
+
+  public boolean isVirus(String prog){
+    // decide whether a prog file is virus.
+    // Args:
+    //   prog: name of the program file
+    // Raises:
+    //   Error if file cannot load
+    // Return:
+    //   True if it is virus, False otherwise
+    
   }
 
   private String _substring(String str, int len){
