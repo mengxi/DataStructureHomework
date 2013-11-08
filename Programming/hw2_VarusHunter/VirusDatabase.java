@@ -3,15 +3,24 @@
  * Time: 2013/11/2
  * Author: Mengxi Li   UNI: ML3577
  * */
-import java.util.*;
-
 package hw2_VarusHunter
+
+import java.util.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 // The dictionary storing # of bytes seen in a type of programs
 class BytesDistProgram
 {
   private Map<String, Integer> dist;
-  
+ 
+  public Map<String, Integer> getData(){
+    // fetch the data 
+    return dist;
+  }
+
   /* add counts of observation of key*/
   public void add(String key){
     int pre_count = this.count(key);
@@ -85,7 +94,39 @@ public class VirusDatabase
     //   file: write file name, select a random one if null
     // Return:
     //   Saved file name
+    //   http://www.mkyong.com/java/json-simple-example-read-and-write-json/
 
+    JSONObject obj = new JSONObject();
+	obj.put("name", "MengXi");
+ 
+	JSONArray benigh_obj = new JSONObject();
+    for(Map.Entry<String, Integer> entry : this.benigh.getData()){
+      benigh_obj.put(entry.getKey(), entry.getValue());
+    }
+	obj.put("benigh", benigh_obj);
+
+    JSONArray virus_obj = new JSONObject();
+    for(Map.Entry<String, Integer> entry : this.virus.getData()){
+      virus_obj.put(entry.getKey(), entry.getValue());
+    }
+	obj.put("virus", virus_obj);
+    
+    if(!file) file = this._randomFileName();
+
+	try {
+	  FileWriter fw = new FileWriter(file);
+	  fw.write(obj.toJSONString());
+	  fw.flush();
+	  fw.close();
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
+	//  System.out.print(obj);
+    return file;
+  }
+
+  private _randomFileName(){
+    // return a random file name for database storage.
   }
 
   public boolean loadDatabase(String file){
