@@ -7,9 +7,13 @@ package hw2_VarusHunter
 
 import java.util.*;
 import java.io.FileWriter;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser
+import org.json.simple.parser.ParseException
 
 // The dictionary storing # of bytes seen in a type of programs
 class BytesDistProgram
@@ -97,32 +101,23 @@ public class VirusDatabase
     //   http://www.mkyong.com/java/json-simple-example-read-and-write-json/
 
     JSONObject obj = new JSONObject();
-	obj.put("name", "MengXi");
- 
-	JSONArray benigh_obj = new JSONObject();
+    obj.put("name", "MengXi");
+    JSONObject benigh_obj = new JSONObject();
     for(Map.Entry<String, Integer> entry : this.benigh.getData()){
       benigh_obj.put(entry.getKey(), entry.getValue());
     }
-	obj.put("benigh", benigh_obj);
-
-    JSONArray virus_obj = new JSONObject();
+    obj.put("benigh", benigh_obj);
+    JSONObject virus_obj = new JSONObject();
     for(Map.Entry<String, Integer> entry : this.virus.getData()){
       virus_obj.put(entry.getKey(), entry.getValue());
     }
-	obj.put("virus", virus_obj);
-    
+    obj.put("virus", virus_obj);
     if(!file) file = this._randomFileName();
-
-	try {
-	  FileWriter fw = new FileWriter(file);
-	  fw.write(obj.toJSONString());
-	  fw.flush();
-	  fw.close();
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
-	//  System.out.print(obj);
-    return file;
+    boolean write_success = 
+            new ReadWriteFile(file).write(obj.toJSONString());
+    assert write_success;
+    if(write_success) return file;
+    else return null;
   }
 
   private _randomFileName(){
@@ -135,6 +130,15 @@ public class VirusDatabase
     //   file: name of file storing database
     // Return:
     //   True if success, false otherwise
+    JSONParser parser = new JSONParser();
+    try{
+      Object obj = parser.parse(new FileReader(file));
+      JSONObject json_obj = (JSONObject) obj;
+      String name = (String) json_obj.get("name");
+      JSONArray benigh_obj = (JSONArray) json_obj.get("benigh");
+      JSONArray virus_obj = (JSONArray) json_obj.get("virus");
+
+    }
   }
 
   public boolean isVirus(String prog){

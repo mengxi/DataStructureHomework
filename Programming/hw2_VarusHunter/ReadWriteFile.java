@@ -9,8 +9,22 @@ public class ReadWriteFile
     // read max_bytes from file.
   }
 
-  public void write(String str){
+  public boolean write(String content){
     // write str to file.
+    // Args: 
+    //   content: the content to export
+    // Returns:
+    //   True if write to file, False if exception.
+    try {
+      FileWriter fw = new FileWriter(this.file);
+      fw.write(content);
+      fw.flush();
+      fw.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return false;
+    }
+    return true;
   }
 
   public void close(){
