@@ -100,7 +100,7 @@ public class VirusDatabase
     ++ this.num_virus_files;
   }
   
-  public String saveDatabase(String file=null){
+  public String saveDatabase(String dir, String file=null){
     // save database to file
     // Args:
     //   file: write file name, select a random one if null
@@ -123,7 +123,8 @@ public class VirusDatabase
       virus_obj.put(entry.getKey(), entry.getValue());
     }
     obj.put("virus", virus_obj);
-    if(!file) file = this._randomFileName();
+    if(!file || file.length()==0) file = dir + this._randomFileName();
+    else file = dir + file;
     boolean write_success = 
             new ReadWriteFile(file).write(obj.toJSONString());
     assert write_success;
@@ -157,14 +158,15 @@ public class VirusDatabase
     return true;
   }
 
-  public boolean loadDatabase(String file){
+  public String loadDatabase(String dir, String file){
     // Read database from file.
     // Args:
     //   file: name of file storing database
     // Return:
-    //   True if success, false otherwise
+    //   Name of the file loaded if success, null otherwise
     this.clear();
     boolean load_success = true;
+    file = dir + file;
     JSONObject json_obj = new ReadWriteFile(file).readJSON();
     assert json_obj != null;
     String name = (String) json_obj.get("name");
@@ -177,7 +179,8 @@ public class VirusDatabase
     load_success &= 
       this._resetFile((JSONObject)json_obj.get("virus"),
                       this.virus);
-    return load_success;
+    if(load_success) return file;
+    return null;
   }
 
   public boolean isVirus(String filename){
@@ -221,7 +224,7 @@ public class VirusDatabase
     this.num_virus_files = 0;
   }
 
-  VirusFile(int key_len=Flags.key_len_default){
+  VirusDatabase(int key_len=Flags.key_len_default){
     this.__init__(key_len);
   }
 }

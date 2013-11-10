@@ -40,7 +40,15 @@ public class ReadWriteFile
     return json_obj;
  }
 
-  public boolean write(String content){
+ public boolean is_dir(String dir){
+   /* return true if dir is a valid directory */
+   File f = new File(dir);
+   if(!f.exists()) return false;
+   else if(!f.isDirectory()) return false;
+   return true;
+ }
+
+ public boolean write(String content){
     // write str to file.
     // Args: 
     //   content: the content to export
