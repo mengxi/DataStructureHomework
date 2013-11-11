@@ -76,6 +76,7 @@ public class ReadWriteFile
       content = (new Scanner(new File(this.filename))
                  .useDelimiter("\\Z").next());
     } catch (IOException e){
+      Logging.error("Read file: " + this.filename);
       e.printStackTrace();
       return null;
     }

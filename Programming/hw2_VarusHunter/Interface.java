@@ -135,6 +135,18 @@ public class Interface{
 
   public void predict(){
     /* calculate probability of an unknown file */
+    System.out.println("Please type in the file name to predict. " + 
+                       "To return: blank");
+    String filename = this.waitForString();
+    if(filename.isEmpty()) return;
+    double[] prob_virus = new double[1];
+    boolean isVirus = false;
+    try{
+      isVirus = this.database.isVirus(filename, prob_virus);
+    } catch (Exception e){
+       
+    }
+    
   }
 
   public void info(){

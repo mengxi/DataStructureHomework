@@ -183,19 +183,25 @@ public class VirusDatabase
     return null;
   }
 
-  public boolean isVirus(String filename){
+  public boolean isVirus(String filename, double[] prob_virus)
+  throws Exception {
     // decide whether a prog file is virus.
     // Args:
     //   prog: name of the program file
+    //   prob_virus: a list of one for probability of being virus. 
     // Raises:
     //   Error if file cannot load
     // Return:
     //   True if it is virus, False otherwise
     assert this.num_benigh_files > 0;
     assert this.num_virus_files > 0;
-    float log_is_benigh = Math.log(this.num_benigh_files);
-    float log_is_virus = Math.log(this.num_virus_files);
+    double log_is_benigh = Math.log(this.num_benigh_files);
+    double log_is_virus = Math.log(this.num_virus_files);
     String str = new ReadWriteFile(filename).toString();
+    if(!str || str.isEmpty()) {
+      throw new Exception("cannot open file " + filename);
+      return false;
+    }
     for(int i = 0; i <= str.length() - this.key_len; i++){
       String bytes = str.substring(i, i + this.key_len);
       log_is_benigh += Math.log((1e-7 + benigh.get(bytes)) /
@@ -203,7 +209,7 @@ public class VirusDatabase
       log_is_virus += Math.log((1e-7 + virus.get(bytes)) /
                                this.num_virus_files);
     }
-
+    prob_virus[0] = ratio / (1 + ratio); 
     return log_is_virus > log_is_benigh;
 
   }
