@@ -9,14 +9,18 @@ public class Logging{
   }
 
   public static void error(String str){
-    print("ERROR: " + str);
+    this.print("ERROR: " + str);
   }
 
   public static void info(String str){
-    print("INFO: " + str);
+    this.print("INFO: " + str);
   }
 
   public static void warn(String str){
-    print("WARN: " + str);
+    this.print("WARN: " + str);
+  }
+
+  public static void stdout(String str){
+    this.print(str);
   }
 }

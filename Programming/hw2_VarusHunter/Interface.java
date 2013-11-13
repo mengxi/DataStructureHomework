@@ -25,7 +25,7 @@ class Option{
 public class Interface{
   public Map<Integer, Option> options; 
   public String databaseDir;
-  public VirusDatabasei database;
+  public VirusDatabase database;
 
   public void addOption(Option o){
     this.options.put(o.key, o);
@@ -34,7 +34,7 @@ public class Interface{
   public void printInterface(){
     for(int i : this.options.keySet()){
       String str = i + " : " + this.options.get(i).notice;
-      System.out.println(str);
+      Logging.stdout(str);
     }
     System.out.print("Please make your selection: ");
   }
@@ -54,16 +54,16 @@ public class Interface{
       for(String s : require){
         if(s == input) return input;
       }
-      System.out.println("Invalid Choice");
+      Logging.stdout("Invalid Choice");
       System.out.print(notice);
     }while(true);
   }
 
   public void save(){
     /* save the database */
-    System.out.println("Please type in a file name to store database " +
-                       "(will generate a random file name if blank) " +
-                       "To return without save: type '-': ");
+    Logging.stdout("Please type in a file name to store database " +
+                   "(will generate a random file name if blank) " +
+                   "To return without save: type '-': ");
     String filename = this.waitForString();
     String fileRet = null;
     if(filename == '-') return;
@@ -71,9 +71,9 @@ public class Interface{
     fileRet = this.database.saveDatabase(this.databaseDir, filename);
     
     if(!fileRet){
-      System.out.println("Error in save database");
+      Logging.warn("Error in save database");
     } else {
-      System.out.println("database saved to " + fileRet);
+      Logging.stdout("database saved to " + fileRet);
     }
   }
 
@@ -85,32 +85,32 @@ public class Interface{
     String str = this.waitUntilRequire(["y","n"], notice);
     if(str == "n") return;
     if(str == "y"){
-      System.out.println("Please type in a database file name to load, " +
-                         "To return: blank");
+      Logging.stdout("Please type in a database file name to load, " +
+                     "To return: blank");
       String filename = waitForString();
       if(filename.isEmpty()) return;
       String ret = this.database.loadDatabase(this.databaseDir, filename);
       if(!ret){
-        System.out.println("Error in load database");
+        Logging.warn("Error in load database");
       } else{
-        System.out.println("database loaded successfully from: " + ret);
+        Logging.stdout("database loaded successfully from: " + ret);
       }
     }
   }
 
   public void changeDatabaseDir(){
     do{
-      System.out.println("Please type in a database dir, " +
-                         "To return: blank");
+      Logging.stdout("Please type in a database dir, " +
+                     "To return: blank");
       String dirname = waitForString();
       if(dirname.isEmpty()) return;
       if(!new ReadWriteFile(dirname).is_dir()){
-        System.out.println("The directory you typed in is not correct!!!");
+        Logging.warn("The directory you typed in is not correct!!!");
         continue;
       } else break;
     } while (true);
     this.databaseDir = dirname;
-    System.out.println("Successfully updated database directory to: " + 
+    Logging.stdout("Successfully updated database directory to: " + 
                        this.databaseDir);
   }
 
@@ -120,43 +120,62 @@ public class Interface{
     String str = this.waitUntilRequire(["y","n"], notice);
     if(str == "y") this.save();
     this.clear();
-    System.out.println("Quit the program.....Goodbye");
+    Logging.stdout("Quit the program.....Goodbye");
   }
 
   public void clear(){
     /* clear database */
     this.database.clear();
-    System.out.println("Database cleared.");
+    Logging.stdout("Database cleared.");
   }
 
-  public void add_benigh_files(){}
+  private void add_files(String file_database){
+    String notice = "Please make selections:\n" +
+                    "0: return\n" +
+                    "1: type in a list of file names, separated by space\n" + 
+                    "2: manually type in a file contents\n : ";
+    Logging.stdout(notice);
+    String select = this.waitUntilRequire(["0","1","2"], notice);
+    if(select == "0") return;
+    if(select == "1") {}
+    if(select == "2") {}
+  }
 
-  public void add_virus_files(){}
+  public void add_benigh_files(){
+  
+  }
+
+  public void add_virus_files(){
+  
+  }
 
   public void predict(){
     /* calculate probability of an unknown file */
-    System.out.println("Please type in the file name to predict. " + 
-                       "To return: blank");
+    Logging.stdout("Please type in the file name to predict. " + 
+                   "To return: blank");
     String filename = this.waitForString();
     if(filename.isEmpty()) return;
-    double[] prob_virus = new double[1];
-    boolean isVirus = false;
+    double virusProb = 0.0;
     try{
-      isVirus = this.database.isVirus(filename, prob_virus);
+      virusProb = this.database.isVirus(filename);
     } catch (Exception e){
-       
+      Logging.warn("Error in predict: " + e);
+      e.printStackTrace();
+      return;
     }
-    
+    Logging.stdout("The probability of " + filename + " to be\n" 
+                   "  malicious: " + virusProb + "\n"
+                   "  benigh: " + (1.0-virusProb));
   }
 
   public void info(){
     /* Print information about myself */
-    System.out.println("Name: " + Flags.myname);
-    System.out.println("UNI:  " + Flags.UIN);
-    System.out.println("Byte length: " + this.database.key_len);
-    System.out.println("Number of benigh files added: " + 
+    Logging.stdout("Name: " + Flags.myname);
+    Logging.stdout("UNI:  " + Flags.UIN);
+    Logging.stdout("Byte length: " + this.database.key_len);
+    Logging.stdout("Number of benigh files added: " + 
                        this.database.num_benigh_files);
-    System.out.println("Number of virus files added: " +
+    Logging.stdout("Number of virus files added: " +
                        this.database.num_virus_files);
   }
 
@@ -184,13 +203,13 @@ public class Interface{
 
   public void processKey(int key){
     if(!this.options.containsKey(key)){
-      System.out.println("Invalid Selection");
+      Logging.stdout("Invalid Selection");
       return;
     }
     try{
       this.options.get(key).invoke(this);
     } catch (Exception e){
-      System.out.println("Exception in: " + this.options.get(key).notice);
+      Logging.warn("Exception in: " + this.options.get(key).notice);
       e.printStackTrace();
     }
   }
