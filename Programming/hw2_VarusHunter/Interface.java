@@ -1,4 +1,4 @@
-package hw2_VarusHunter;
+package VirusHunter;
 
 import java.lang.String;
 import java.util.concurrent.Callable;
@@ -98,6 +98,11 @@ public class Interface{
     }
   }
 
+  public void showDatabaseDir(){
+    Logging.info("Current database dir is \n" + 
+                 this.database.databaseDir);
+  }
+
   public void changeDatabaseDir(){
     /* Read a dir input by user and updated it to this.database. */
     String dirname;
@@ -111,8 +116,9 @@ public class Interface{
         continue;
       } else break;
     } while (true);
-    this.database.changeDatabaseDir(dirname);
-    Logging.stdout("Successfully updated database directory to: " + 
+    String path = new ReadWriteFile(dirname).getAbsoluteDirectoryPath();
+    this.database.changeDatabaseDir(path);
+    Logging.info("Successfully updated database directory to: " + 
                    this.database.databaseDir);
   }
 
@@ -200,6 +206,8 @@ public class Interface{
                               Interface.class.getMethod("quit")));
     this.addOption(new Option(key++, "Change database directory",
                               Interface.class.getMethod("changeDatabaseDir")));
+    this.addOption(new Option(key++, "Show current database directory",
+                              Interface.class.getMethod("showDatabaseDir")));
     this.addOption(new Option(key++, "load a database file",
                               Interface.class.getMethod("load")));
     this.addOption(new Option(key++, "save the current database",

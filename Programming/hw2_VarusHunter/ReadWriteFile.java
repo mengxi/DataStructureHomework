@@ -1,4 +1,4 @@
-package hw2_VarusHunter;
+package VirusHunter;
 
 import java.io.File;
 import java.io.FileReader;
@@ -42,6 +42,13 @@ public class ReadWriteFile
       json_obj = null;
     }
     return json_obj;
+ }
+
+ public String getAbsoluteDirectoryPath(){
+   /* return the absolute path of a dirctory */
+  String path = new File(this.location).getAbsolutePath();
+  if(path.charAt(path.length()-1) != '/') path = path + "/";
+  return path;
  }
 
  public boolean is_dir(){

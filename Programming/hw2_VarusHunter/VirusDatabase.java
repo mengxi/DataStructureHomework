@@ -3,7 +3,7 @@
  * Time: 2013/11/2
  * Author: Mengxi Li   UNI: ML3577
  * */
-package hw2_VarusHunter;
+package VirusHunter;
 
 import java.lang.Math;
 import java.lang.String;

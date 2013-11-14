@@ -1,4 +1,4 @@
-package hw2_VarusHunter;
+package VirusHunter;
 
 import java.lang.String;
 
@@ -19,15 +19,15 @@ public class Logging{
   }
 
   public static void error(String str){
-    print(ANSI_RED + "ERROR: " + str + ANSI_WHITE);
+    print(ANSI_RED + "ERROR: " + str + ANSI_RESET);
   }
 
   public static void info(String str){
-    print(ANSI_BLUE + "INFO: " + str + ANSI_WHITE);
+    print(ANSI_BLUE + "INFO: " + str + ANSI_RESET);
   }
 
   public static void warn(String str){
-    print(ANSI_YELLOW + "WARN: " + str + ANSI_WHITE);
+    print(ANSI_YELLOW + "WARN: " + str + ANSI_RESET);
   }
 
   public static void stdout(String str){

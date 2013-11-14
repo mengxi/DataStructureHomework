@@ -1,5 +1,5 @@
 
-package hw2_VarusHunter;
+package VirusHunter;
 
 import java.lang.String;
 import java.util.UUID;
