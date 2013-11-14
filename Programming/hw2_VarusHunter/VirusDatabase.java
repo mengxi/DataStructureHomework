@@ -3,10 +3,11 @@
  * Time: 2013/11/2
  * Author: Mengxi Li   UNI: ML3577
  * */
-package hw2_VarusHunter
+package hw2_VarusHunter;
 
 import java.lang.Math;
 import java.lang.String;
+import java.lang.Integer;
 import java.util.*;
 import java.io.IOException;
 import org.json.simple.JSONObject;
@@ -68,16 +69,19 @@ public class VirusDatabase
   int key_len; // length of keys
   int num_benigh_files;
   int num_virus_files;
+  String databaseDir;
 
   public void addBenighStr(String str){
     /*Add a string to benigh*/
     assert str.length() == this.key_len;
+    Logging.info("Add file " + str + " to benigh database");
     this.benigh.add(str);
   }
 
   public void addVirusStr(String str){
     /*Add a string to virus*/
     assert str.length() == this.key_len;
+    Logging.info("Add file " + str + " to virus database");
     this.virus.add(str);
   }
 
@@ -100,7 +104,11 @@ public class VirusDatabase
     ++ this.num_virus_files;
   }
   
-  public String saveDatabase(String dir, String file=null){
+  public String saveDatabase(){
+    return this.saveDatabase(null);
+  }
+
+  public String saveDatabase(String file){
     // save database to file
     // Args:
     //   file: write file name, select a random one if null
@@ -114,17 +122,17 @@ public class VirusDatabase
     obj.put("num_virus_files", this.num_virus_files);
     obj.put("key_len", this.key_len);
     JSONObject benigh_obj = new JSONObject();
-    for(Map.Entry<String, Integer> entry : this.benigh.getData()){
+    for(Map.Entry<String, Integer> entry : this.benigh.getData().entrySet()){
       benigh_obj.put(entry.getKey(), entry.getValue());
     }
     obj.put("benigh", benigh_obj);
     JSONObject virus_obj = new JSONObject();
-    for(Map.Entry<String, Integer> entry : this.virus.getData()){
+    for(Map.Entry<String, Integer> entry : this.virus.getData().entrySet()){
       virus_obj.put(entry.getKey(), entry.getValue());
     }
     obj.put("virus", virus_obj);
-    if(!file || file.length()==0) file = dir + this._randomFileName();
-    else file = dir + file;
+    if(file==null || file.length()==0) file = this.databaseDir + this._randomFileName();
+    else file = this.databaseDir + file;
     boolean write_success = 
             new ReadWriteFile(file).write(obj.toJSONString());
     assert write_success;
@@ -138,7 +146,7 @@ public class VirusDatabase
            + this.num_virus_files + '_' + Flags.uuid();
   }
 
-  private boolean _resetFile(JSONObject obj, BytesDistProgram data){ 
+  private boolean _resetFile(Map<String, Integer> obj, BytesDistProgram data){ 
     /* Reset data as shown in obj 
      * Args: 
      *   obj: map<String, Integer> from a Json file
@@ -147,18 +155,21 @@ public class VirusDatabase
      *   true if success load. false if exception*/
     assert data != null;
     data.clear();
-    try{
-      for(String key : obj.keySet()){
+    for(String key : obj.keySet()){}
+    // Iterator<String> keys = obj.keys();
+    /*while(keys.hasNext()){
+      String key = keys.next();
+      try{
         data.put(key, obj.getInt(key));
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();
-      return false;
-    }
+      } catch (JSONException e) {
+        e.printStackTrace();
+        return false;
+      }     
+    }*/
     return true;
   }
 
-  public String loadDatabase(String dir, String file){
+  public String loadDatabase(String file){
     // Read database from file.
     // Args:
     //   file: name of file storing database
@@ -166,13 +177,13 @@ public class VirusDatabase
     //   Name of the file loaded if success, null otherwise
     this.clear();
     boolean load_success = true;
-    file = dir + file;
+    file = this.databaseDir + file;
     JSONObject json_obj = new ReadWriteFile(file).readJSON();
     assert json_obj != null;
     String name = (String) json_obj.get("name");
-    this.num_benigh_files = json_obj.getInt("num_benigh_files");
-    this.num_virus_files = json_obj.getInt("num_virus_files");
-    this.key_len = json_obj.getInt("key_len");
+    this.num_benigh_files = Integer.parseInt((String)json_obj.get("num_benigh_files"));
+    this.num_virus_files = Integer.parseInt((String)json_obj.get("num_virus_files"));
+    this.key_len = Integer.parseInt((String)json_obj.get("key_len"));
     load_success &= 
       this._resetFile((JSONObject)json_obj.get("benigh"),
                       this.benigh);
@@ -181,6 +192,10 @@ public class VirusDatabase
                       this.virus);
     if(load_success) return file;
     return null;
+  }
+
+  public void changeDatabaseDir(String dirName){
+    this.databaseDir = dirName;
   }
 
   public double virusProb(String filename) throws Exception {
@@ -196,15 +211,14 @@ public class VirusDatabase
     double log_is_benigh = Math.log(this.num_benigh_files);
     double log_is_virus = Math.log(this.num_virus_files);
     String str = new ReadWriteFile(filename).toString();
-    if(!str || str.isEmpty()) {
+    if(str == null || str.isEmpty()) {
       throw new Exception("cannot open file " + filename);
-      return -1.0;
     }
     for(int i = 0; i <= str.length() - this.key_len; i++){
       String bytes = str.substring(i, i + this.key_len);
-      log_is_benigh += Math.log((1e-7 + benigh.get(bytes)) /
+      log_is_benigh += Math.log((1e-7 + this.benigh.count(bytes)) /
                                 this.num_benigh_files);
-      log_is_virus += Math.log((1e-7 + virus.get(bytes)) /
+      log_is_virus += Math.log((1e-7 + this.virus.count(bytes)) /
                                this.num_virus_files);
     }
     double ratio = Math.exp(log_is_virus - log_is_benigh);
@@ -218,6 +232,7 @@ public class VirusDatabase
     this.key_len = key_len;
     this.num_benigh_files = 0;
     this.num_virus_files = 0;
+    this.databaseDir = "./";
   }
 
   public void clear(){
@@ -228,7 +243,11 @@ public class VirusDatabase
     this.num_virus_files = 0;
   }
 
-  VirusDatabase(int key_len=Flags.key_len_default){
+  VirusDatabase(int key_len){
     this.__init__(key_len);
+  }
+
+  VirusDatabase(){
+    this.__init__(Flags.key_len_default);
   }
 }

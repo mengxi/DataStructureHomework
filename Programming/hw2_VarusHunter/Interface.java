@@ -24,7 +24,6 @@ class Option{
 
 public class Interface{
   public Map<Integer, Option> options; 
-  public String databaseDir;
   public VirusDatabase database;
 
   public void addOption(Option o){
@@ -52,25 +51,25 @@ public class Interface{
     do{
       String input = scan.nextLine();
       for(String s : require){
-        if(s == input) return input;
+        if(s.equals(input)) return input;
       }
-      Logging.stdout("Invalid Choice");
+      Logging.stdout("Invalid Choice:" + input);
       System.out.print(notice);
     }while(true);
   }
 
   public void save(){
     /* save the database */
-    Logging.stdout("Please type in a file name to store database " +
-                   "(will generate a random file name if blank) " +
-                   "To return without save: type '-': ");
+    Logging.stdout("Please type in a file name to store database \n" +
+                   "will generate a random file name if blank\n " +
+                   "To return without save anything: type '-': ");
     String filename = this.waitForString();
     String fileRet = null;
-    if(filename == '-') return;
+    if(filename.equals("-")) return;
 
-    fileRet = this.database.saveDatabase(this.databaseDir, filename);
+    fileRet = this.database.saveDatabase(filename);
     
-    if(!fileRet){
+    if(fileRet==null || fileRet.isEmpty()){
       Logging.warn("Error in save database");
     } else {
       Logging.stdout("database saved to " + fileRet);
@@ -82,15 +81,16 @@ public class Interface{
     String notice = "This will clear the current database, " +
                     "are you sure to go on? (y/n): ";
     System.out.print(notice);
-    String str = this.waitUntilRequire(["y","n"], notice);
-    if(str == "n") return;
-    if(str == "y"){
+    String[] choices = {"y", "n"};
+    String str = this.waitUntilRequire(choices, notice);
+    if(str.equals("n")) return;
+    if(str.equals("y")){
       Logging.stdout("Please type in a database file name to load, " +
                      "To return: blank");
       String filename = waitForString();
       if(filename.isEmpty()) return;
-      String ret = this.database.loadDatabase(this.databaseDir, filename);
-      if(!ret){
+      String ret = this.database.loadDatabase(filename);
+      if(ret == null || ret.isEmpty()){
         Logging.warn("Error in load database");
       } else{
         Logging.stdout("database loaded successfully from: " + ret);
@@ -99,26 +99,29 @@ public class Interface{
   }
 
   public void changeDatabaseDir(){
+    /* Read a dir input by user and updated it to this.database. */
+    String dirname;
     do{
       Logging.stdout("Please type in a database dir, " +
                      "To return: blank");
-      String dirname = waitForString();
+      dirname = this.waitForString();
       if(dirname.isEmpty()) return;
       if(!new ReadWriteFile(dirname).is_dir()){
         Logging.warn("The directory you typed in is not correct!!!");
         continue;
       } else break;
     } while (true);
-    this.databaseDir = dirname;
+    this.database.changeDatabaseDir(dirname);
     Logging.stdout("Successfully updated database directory to: " + 
-                       this.databaseDir);
+                   this.database.databaseDir);
   }
 
   public void quit(){
     String notice = "Do you want to save your database before leave? (y/n): ";
     System.out.print(notice);
-    String str = this.waitUntilRequire(["y","n"], notice);
-    if(str == "y") this.save();
+    String[] choices = {"y", "n"};
+    String str = this.waitUntilRequire(choices, notice);
+    if(str.equals("y")) this.save();
     this.clear();
     Logging.stdout("Quit the program.....Goodbye");
   }
@@ -130,23 +133,35 @@ public class Interface{
   }
 
   private void add_files(String file_database){
-    String notice = "Please make selections:\n" +
-                    "0: return\n" +
-                    "1: type in a list of file names, separated by space\n" + 
-                    "2: manually type in a file contents\n : ";
-    Logging.stdout(notice);
-    String select = this.waitUntilRequire(["0","1","2"], notice);
-    if(select == "0") return;
-    if(select == "1") {}
-    if(select == "2") {}
+    /* Wildcard matching: 
+     * http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/DirectoryScanner.html*/
+    Logging.stdout("Please type in a list of " + file_database + " files." +
+                   "Separated by space.\n " + 
+                   "Use regular expression as that in Linux bash to " + 
+                   "type in multiple files at one time\n" +
+                   "E.X. benigh/* means all files under directory ./benigh\n" + 
+                   "To return: type blank");
+    String input = this.waitForString();
+    if(input.isEmpty()) return; 
+    String[] files = new ReadWriteFile().parseStringToFileArray(input);
+    if(files==null || files.length==0){
+      Logging.stdout("Do not discover any file match your input.");
+      return;
+    }
+    for(String filename : files){
+      if(file_database.equals("benigh")) 
+        this.database.addBenighFile(filename);
+      else if(file_database.equals("virus"))
+        this.database.addVirusFile(filename);
+    }
   }
 
   public void add_benigh_files(){
-  
+    this.add_files("benigh");
   }
 
   public void add_virus_files(){
-  
+    this.add_files("virus");
   }
 
   public void predict(){
@@ -157,14 +172,14 @@ public class Interface{
     if(filename.isEmpty()) return;
     double virusProb = 0.0;
     try{
-      virusProb = this.database.isVirus(filename);
+      virusProb = this.database.virusProb(filename);
     } catch (Exception e){
       Logging.warn("Error in predict: " + e);
       e.printStackTrace();
       return;
     }
-    Logging.stdout("The probability of " + filename + " to be\n" 
-                   "  malicious: " + virusProb + "\n"
+    Logging.stdout("The probability of " + filename + " to be\n" +
+                   "  malicious: " + virusProb + "\n" +
                    "  benigh: " + (1.0-virusProb));
   }
 
@@ -216,7 +231,6 @@ public class Interface{
 
   public void __init__(){
     try{
-      this.databaseDir = "./";
       this.options = new HashMap<Integer, Option>();
       this.database = new VirusDatabase();
 
