@@ -53,7 +53,7 @@ public class Interface{
       for(String s : require){
         if(s.equals(input)) return input;
       }
-      Logging.stdout("Invalid Choice:" + input);
+      Logging.warn("Invalid Choice:" + input);
       System.out.print(notice);
     }while(true);
   }
@@ -72,7 +72,7 @@ public class Interface{
     if(fileRet==null || fileRet.isEmpty()){
       Logging.warn("Error in save database");
     } else {
-      Logging.stdout("database saved to " + fileRet);
+      Logging.info("database saved to " + fileRet);
     }
   }
 
@@ -93,7 +93,7 @@ public class Interface{
       if(ret == null || ret.isEmpty()){
         Logging.warn("Error in load database");
       } else{
-        Logging.stdout("database loaded successfully from: " + ret);
+        Logging.info("database loaded successfully from: " + ret);
       }
     }
   }
@@ -135,7 +135,7 @@ public class Interface{
   public void clear(){
     /* clear database */
     this.database.clear();
-    Logging.stdout("Database cleared.");
+    Logging.info("Database cleared.");
   }
 
   private void add_files(String file_database){
@@ -151,7 +151,7 @@ public class Interface{
     if(input.isEmpty()) return; 
     String[] files = new ReadWriteFile().parseStringToFileArray(input);
     if(files==null || files.length==0){
-      Logging.stdout("Do not discover any file match your input.");
+      Logging.warn("Do not discover any file match your input.");
       return;
     }
     for(String filename : files){
@@ -184,13 +184,14 @@ public class Interface{
       e.printStackTrace();
       return;
     }
-    Logging.stdout("The probability of " + filename + " to be\n" +
+    Logging.info("The probability of " + filename + " to be\n" +
                    "  malicious: " + virusProb + "\n" +
                    "  benigh: " + (1.0-virusProb));
   }
 
   public void info(){
     /* Print information about myself */
+    Logging.info("Information about myself: ");
     Logging.stdout("Name: " + Flags.myname);
     Logging.stdout("UNI:  " + Flags.UIN);
     Logging.stdout("Byte length: " + this.database.key_len);
@@ -226,7 +227,7 @@ public class Interface{
 
   public void processKey(int key){
     if(!this.options.containsKey(key)){
-      Logging.stdout("Invalid Selection");
+      Logging.warn("Invalid Selection");
       return;
     }
     try{

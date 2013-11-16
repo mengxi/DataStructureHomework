@@ -7,7 +7,7 @@ import java.util.UUID;
 public class Flags {
   public static final String myname = "Mengxi Li";
   public static final String UIN = "ML3577";
-  public static final int key_len_default = 8;
+  public static final int key_len_default = 7;
   public static String uuid(){
     return(UUID.randomUUID().toString());
   }
