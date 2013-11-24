@@ -181,9 +181,9 @@ public class VirusDatabase
     JSONObject json_obj = new ReadWriteFile(file).readJSON();
     assert json_obj != null;
     String name = (String) json_obj.get("name");
-    this.num_benigh_files = Integer.parseInt((String)json_obj.get("num_benigh_files"));
-    this.num_virus_files = Integer.parseInt((String)json_obj.get("num_virus_files"));
-    this.key_len = Integer.parseInt((String)json_obj.get("key_len"));
+    this.num_benigh_files = ((Long)json_obj.get("num_benigh_files")).intValue();
+    this.num_virus_files = ((Long)json_obj.get("num_virus_files")).intValue();
+    this.key_len = ((Long)json_obj.get("key_len")).intValue();
     load_success &= 
       this._resetFile((JSONObject)json_obj.get("benigh"),
                       this.benigh);

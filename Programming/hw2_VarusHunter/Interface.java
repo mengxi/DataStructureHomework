@@ -23,7 +23,7 @@ class Option{
 
 
 public class Interface{
-  public Map<Integer, Option> options; 
+  private Map<Integer, Option> options; 
   public VirusDatabase database;
 
   public void addOption(Option o){
@@ -36,6 +36,19 @@ public class Interface{
       Logging.stdout(str);
     }
     System.out.print("Please make your selection: ");
+  }
+  
+  public int waitForIntInScale(int min, int max){
+    assert min <= max;
+    int key = 0;
+    Scanner scan = new Scanner(System.in);
+    do{
+      key = scan.nextInt();
+      if(key < min || key > max){
+        Logging.warn("Please input an integer in [" + min + ", " + max + "]");
+      }
+    }while(key < min || key > max);
+    return key;
   }
 
   public int waitForInt(){
@@ -138,24 +151,41 @@ public class Interface{
     Logging.info("Database cleared.");
   }
 
+  public void key_change(){
+    /* change the default key length */
+    String notice = "This will clear your current database. Do you want to " +
+                    "save your database before continue? (y/n): ";
+    Logging.stdout(notice);
+    String[] choices = {"y", "n"};
+    String str = this.waitUntilRequire(choices, notice);
+    if(str.equals("y")) this.save();
+    this.clear();
+    Logging.stdout("Please input a new key length in ["+Flags.min_key+
+                   ", "+Flags.max_key+"]: ");
+    int new_key = this.waitForIntInScale(Flags.min_key, Flags.max_key);
+    this.database = new VirusDatabase(new_key);
+    Logging.info("The key length of the new database is " + 
+                   this.database.key_len);
+  }
+
   private void add_files(String file_database){
     /* Wildcard matching: 
      * http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/DirectoryScanner.html*/
     Logging.stdout("Please type in a list of " + file_database + " files." +
                    "Separated by space.\n " + 
-                   "Use regular expression as that in Linux bash to " + 
+                   "Use wildcard expression as that in Linux bash to " + 
                    "type in multiple files at one time\n" +
                    "E.X. benigh/* means all files under directory ./benigh\n" + 
                    "To return: type blank");
     String input = this.waitForString();
-    if(input.isEmpty()) return; 
+    if(input.isEmpty()) return;
     String[] files = new ReadWriteFile().parseStringToFileArray(input);
     if(files==null || files.length==0){
       Logging.warn("Do not discover any file match your input.");
       return;
     }
     for(String filename : files){
-      if(file_database.equals("benigh")) 
+      if(file_database.equals("benigh"))
         this.database.addBenighFile(filename);
       else if(file_database.equals("virus"))
         this.database.addVirusFile(filename);
@@ -172,7 +202,7 @@ public class Interface{
 
   public void predict(){
     /* calculate probability of an unknown file */
-    Logging.stdout("Please type in the file name to predict. " + 
+    Logging.stdout("Please type in the file name to predict. " +
                    "To return: blank");
     String filename = this.waitForString();
     if(filename.isEmpty()) return;
@@ -195,10 +225,10 @@ public class Interface{
     Logging.stdout("Name: " + Flags.myname);
     Logging.stdout("UNI:  " + Flags.UIN);
     Logging.stdout("Byte length: " + this.database.key_len);
-    Logging.stdout("Number of benigh files added: " + 
-                       this.database.num_benigh_files);
+    Logging.stdout("Number of benigh files added: " +
+                   this.database.num_benigh_files);
     Logging.stdout("Number of virus files added: " +
-                       this.database.num_virus_files);
+                   this.database.num_virus_files);
   }
 
   public void setup() throws Exception {
@@ -215,6 +245,8 @@ public class Interface{
                               Interface.class.getMethod("save")));
     this.addOption(new Option(key++, "clear the current database",
                               Interface.class.getMethod("clear")));
+    this.addOption(new Option(key++, "change the default key length",
+                              Interface.class.getMethod("key_change")));
     this.addOption(new Option(key++, "add benigh programs",
                               Interface.class.getMethod("add_benigh_files")));
     this.addOption(new Option(key++, "add virus programs",
@@ -258,8 +290,8 @@ public class Interface{
   Interface(){
     this.__init__();
   }
-  
+
   public static void main(String [] args){
     new Interface();
-	}
+  }
 }
