@@ -22,8 +22,8 @@ Files and Libraries:
   ReadWriteFile.java:
     A modular provides support for read and write files. 
     JSON format is applied to store a database to file.
-    This modular contains write java classes to JSON format files, as well as 
-    read JSON format files into java classes
+    This modular can write java classes to JSON format files, as well as 
+    read JSON format files to java classes
 
   Logging.java:
     Provides utilities to output notifications or debug information to stdout.
