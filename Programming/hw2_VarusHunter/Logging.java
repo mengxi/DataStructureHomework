@@ -23,11 +23,11 @@ public class Logging{
   }
 
   public static void info(String str){
-    print(ANSI_BLUE + "INFO: " + str + ANSI_RESET);
+    print(ANSI_YELLOW + "INFO: " + str + ANSI_RESET);
   }
 
   public static void warn(String str){
-    print(ANSI_YELLOW + "WARN: " + str + ANSI_RESET);
+    print(ANSI_PURPLE + "WARN: " + str + ANSI_RESET);
   }
 
   public static void stdout(String str){

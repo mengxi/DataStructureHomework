@@ -131,10 +131,10 @@ public class VirusDatabase
       virus_obj.put(entry.getKey(), entry.getValue());
     }
     obj.put("virus", virus_obj);
-    if(file==null || file.length()==0) file = this.databaseDir + this._randomFileName();
+    if(file==null || file.length()==0) 
+      file = this.databaseDir + this._randomFileName();
     else file = this.databaseDir + file;
-    boolean write_success = 
-            new ReadWriteFile(file).write(obj.toJSONString());
+    boolean write_success = new ReadWriteFile(file).writeJsonToFile(obj);
     assert write_success;
     if(write_success) return file;
     else return null;
@@ -146,7 +146,7 @@ public class VirusDatabase
            + this.num_virus_files + '_' + Flags.uuid();
   }
 
-  private boolean _resetFile(Map<String, Integer> obj, BytesDistProgram data){ 
+  private boolean _resetFile(Map<String, Long> obj, BytesDistProgram data){ 
     /* Reset data as shown in obj 
      * Args: 
      *   obj: map<String, Integer> from a Json file
@@ -155,7 +155,9 @@ public class VirusDatabase
      *   true if success load. false if exception*/
     assert data != null;
     data.clear();
-    for(String key : obj.keySet()){}
+    for(String key : obj.keySet()){
+      data.put(key, obj.get(key).intValue());
+    }
     // Iterator<String> keys = obj.keys();
     /*while(keys.hasNext()){
       String key = keys.next();
@@ -198,7 +200,7 @@ public class VirusDatabase
     this.databaseDir = dirName;
   }
 
-  public double virusProb(String filename) throws Exception {
+  public List virusProb(String filename) throws Exception {
     // decide whether a prog file is virus.
     // Args:
     //   prog: name of the program file
@@ -208,22 +210,29 @@ public class VirusDatabase
     //   The probability of the filename being virus.
     assert this.num_benigh_files > 0;
     assert this.num_virus_files > 0;
-    double log_is_benigh = Math.log(this.num_benigh_files);
-    double log_is_virus = Math.log(this.num_virus_files);
+    double log_is_benigh = 0.0; //Math.log(this.num_benigh_files);
+    double log_is_virus = 0.0; //Math.log(this.num_virus_files);
     String str = new ReadWriteFile(filename).toString();
     if(str == null || str.isEmpty()) {
       throw new Exception("cannot open file " + filename);
     }
     for(int i = 0; i <= str.length() - this.key_len; i++){
       String bytes = str.substring(i, i + this.key_len);
-      log_is_benigh += Math.log((1e-7 + this.benigh.count(bytes)) /
-                                this.num_benigh_files);
-      log_is_virus += Math.log((1e-7 + this.virus.count(bytes)) /
-                               this.num_virus_files);
+      log_is_benigh += Math.log((Flags.zeroffset + this.benigh.count(bytes))); 
+                               // / this.num_benigh_files);
+      log_is_virus += Math.log((Flags.zeroffset + this.virus.count(bytes))); 
+                             //  / this.num_virus_files);
     }
-    double ratio = Math.exp(log_is_virus - log_is_benigh);
-    return ratio / (1 + ratio); 
+    double log_diff = log_is_virus - log_is_benigh;
+    double virus_prob = -1.0;
+    if(log_diff > 20) virus_prob = 1.0;
+    else if(log_diff < -20) virus_prob = 0.0;
+    else {
+      double ratio = Math.exp(log_diff);
+      virus_prob =  ratio / (1+ratio);
+    }
 
+    return Arrays.asList(virus_prob, log_is_virus, log_is_benigh);
   }
 
   public void __init__(int key_len){

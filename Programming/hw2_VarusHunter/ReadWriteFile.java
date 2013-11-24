@@ -59,6 +59,21 @@ public class ReadWriteFile
    return true;
  }
 
+ public boolean writeJsonToFile(JSONObject obj){
+   // Returns:
+   //   True if write is successful, False otherwise
+   try {
+     FileWriter fw = new FileWriter(this.location);
+     obj.writeJSONString(fw);
+     fw.flush();
+     fw.close();
+   } catch (IOException e) {
+     e.printStackTrace();
+     return false;
+   }
+   return true;
+ }
+
  public boolean write(String content){
     // write str to file.
     // Args: 

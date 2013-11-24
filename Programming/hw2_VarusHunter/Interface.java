@@ -2,6 +2,7 @@ package VirusHunter;
 
 import java.lang.String;
 import java.util.concurrent.Callable;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -171,7 +172,7 @@ public class Interface{
   private void add_files(String file_database){
     /* Wildcard matching: 
      * http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/DirectoryScanner.html*/
-    Logging.stdout("Please type in a list of " + file_database + " files." +
+    Logging.stdout("Please type in a list of " + file_database + " files. " +
                    "Separated by space.\n " + 
                    "Use wildcard expression as that in Linux bash to " + 
                    "type in multiple files at one time\n" +
@@ -185,10 +186,14 @@ public class Interface{
       return;
     }
     for(String filename : files){
-      if(file_database.equals("benigh"))
+      if(file_database.equals("benigh")){
+        Logging.info("Add file " + filename + " as a benigh program.");
         this.database.addBenighFile(filename);
-      else if(file_database.equals("virus"))
+      }
+      else if(file_database.equals("virus")){
+        Logging.info("Add file " + filename + " as a virus program.");
         this.database.addVirusFile(filename);
+      }
     }
   }
 
@@ -201,22 +206,40 @@ public class Interface{
   }
 
   public void predict(){
-    /* calculate probability of an unknown file */
-    Logging.stdout("Please type in the file name to predict. " +
-                   "To return: blank");
-    String filename = this.waitForString();
-    if(filename.isEmpty()) return;
-    double virusProb = 0.0;
+    /* calculate probability of a list of unknown files */
+    Logging.stdout("Please type in a list of files to predict " +
+                   "Separated by space.\n " + 
+                   "Use wildcard expression as that in Linux bash to " + 
+                   "type in multiple files at one time\n" +
+                   "E.X. benigh/* means all files under directory ./benigh\n" + 
+                   "To return: type blank");
+    String input = this.waitForString();
+    if(input.isEmpty()) return;
+    String[] files = new ReadWriteFile().parseStringToFileArray(input);
+    if(files==null || files.length==0){
+      Logging.warn("Do not discover any file match your input.");
+      return;
+    }
+    for(String filename : files){
+      this.predict_one_file(filename);
+    }
+  }
+  
+  public void predict_one_file(String filename){
+    Logging.stdout("Detecting file: " + filename + "...");
+    List<Double> virus_probs = null;
     try{
-      virusProb = this.database.virusProb(filename);
+      virus_probs = this.database.virusProb(filename);
     } catch (Exception e){
       Logging.warn("Error in predict: " + e);
       e.printStackTrace();
       return;
     }
     Logging.info("The probability of " + filename + " to be\n" +
-                   "  malicious: " + virusProb + "\n" +
-                   "  benigh: " + (1.0-virusProb));
+                   "  malicious: " + virus_probs.get(0) +
+                   "   (Log_score: " + virus_probs.get(1) + ")\n" +
+                   "  benigh: " + (1.0-virus_probs.get(0)) +
+                   "   (Log_score: " + virus_probs.get(2) + ")");
   }
 
   public void info(){
@@ -253,7 +276,7 @@ public class Interface{
                               Interface.class.getMethod("add_virus_files")));
     this.addOption(new Option(key++, "print information",
                               Interface.class.getMethod("info")));
-    this.addOption(new Option(key++, "predict an unknown program",
+    this.addOption(new Option(key++, "predict unknown programs",
                               Interface.class.getMethod("predict")));
   }
 
