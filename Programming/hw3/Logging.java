@@ -1,4 +1,4 @@
-package VirusHunter;
+package hw3_graph;
 
 import java.lang.String;
 

@@ -1,5 +1,5 @@
 
-package VirusHunter;
+package hw3_graph;
 
 import java.lang.String;
 import java.util.UUID;
@@ -7,10 +7,6 @@ import java.util.UUID;
 public class Flags {
   public static final String myname = "Mengxi Li";
   public static final String UIN = "ML3577";
-  public static final int key_len_default = 7;
-  public static final int min_key = 1;
-  public static final int max_key = 10;
-  public static final double zeroffset = 1e-10;
   public static String uuid(){
     return(UUID.randomUUID().toString());
   }
