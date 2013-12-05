@@ -1,6 +1,8 @@
 /* The main datastructure to store cities.
  * Author: Mengxi Li
  * Date: 2013/11/29 */
+
+
 package hw3_graph;
 
 import java.lang.String;
@@ -15,7 +17,13 @@ class City{
   public String state = null;
   public String lat = null;
   public String lng = null;
+  /* Stores the man-made dist information. */
   public Map<City, Double> edges = new HashMap<City, Double>();
+
+  public City(String name, String state, String lat, String lon){
+    this.name = name; this.state = state; this.lat = lat; this.lon = lon;
+    this.id = City.nextId();
+  }
 
   public addEdge(City dest, double cost){
     // Add directed link cost to City dest.
@@ -23,22 +31,18 @@ class City{
   }
 
   public double gpsDis(City b){
-    /* Return the gps distance from City b */
+    /* Return the gps distance from City b, instead of the man-made dist info.*/
     return City.distFrom(Double.parseDouble(this.lat),
                          Double.parseDouble(this.lng),
                          Double.parseDouble(b.lat),
                          Double.parseDouble(b.lng));
   }
 
-  public City(String name, String state, String lat, String lon){
-    this.name = name; this.state = state; this.lat = lat; this.lon = lon;
-    this.id = City.nextId();
-  }
-
   public static long city_id = 0;
   public static long nextId(){
     return ++ city_id;
   }
+
   public static double distFrom(double lat1, double lng1, double lat2, 
                                 double lng2) {
     /* Function to calculate gps distance between two gps data, in Meter */
@@ -55,7 +59,7 @@ class City{
   }
 }
 
-public class Cities{
+public class Cities implements DijkstraInterface{
   /* Class to store a list of cities, so that convinient for search */
   Map<Long, City> id_to_city = new HashMap<Long, City>();
   Map<String, Set<City>> name_to_city = new HashMap<String, Set<City>>();
@@ -115,6 +119,24 @@ public class Cities{
       src.addEdge(this.hasId(nei_id), cost);
     }
   }
+
+  /* The function of in DijkstraInterface to be implemented. */
+  public int numNodes(){
+    /* Returns the total number of nodes in the graph */
+    return this.id_to_city.size();
+  }
+
+  public long[] getNeighbors(long sourceId){
+    /* return a list of neighbor ids of the source node */
+    if(Flags.source_of_distance == "gps"){
+    }
+    else if(Flags.source_of_distance == "manual"){}
+
+    assert false;
+    return null;
+  }
+  public double getDistance(long src, long dest);
+
 
   public Cities(){}
 }
