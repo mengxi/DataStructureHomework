@@ -2,7 +2,6 @@
  * Author: Mengxi Li
  * Date: 2013/11/29 */
 
-
 package hw3_graph;
 
 import java.lang.String;
@@ -25,9 +24,23 @@ class City{
     this.id = City.nextId();
   }
 
+  public long id(){
+    return this.id;
+  }
+
   public addEdge(City dest, double cost){
     // Add directed link cost to City dest.
     this.edges.put(dest, cost);
+  }
+
+  public double getManualDis(City dest){
+    if(this.edges.containsKey(dest))
+      return this.edges.get(dest);
+    return -1.0;
+  }
+
+  public Set<City> getManualNeighbors(){
+    return this.edges.keySet();
   }
 
   public double gpsDis(City b){
@@ -120,6 +133,16 @@ public class Cities implements DijkstraInterface{
     }
   }
 
+  public String distance_in_use = "gps";
+
+  public void setGPSDis(){
+    this.distance_in_use = "gps";
+  }
+
+  public void setManualDis(){
+    this.distance_in_use = "manual";
+  }
+
   /* The function of in DijkstraInterface to be implemented. */
   public int numNodes(){
     /* Returns the total number of nodes in the graph */
@@ -128,14 +151,29 @@ public class Cities implements DijkstraInterface{
 
   public long[] getNeighbors(long sourceId){
     /* return a list of neighbor ids of the source node */
-    if(Flags.source_of_distance == "gps"){
+    Set<Long> set_neighbors = new HashSet<Long>();
+    if(this.distance_in_use == "gps"){
+      set_neighbors.addAll(this.id_to_city.keySet());
+      set_neighbors.remove(sourceId);
     }
-    else if(Flags.source_of_distance == "manual"){}
-
-    assert false;
-    return null;
+    else if(this.distance_in_use == "manual"){
+      for(City city : this.hasId(sourceId).getManualNeighbors()){
+        set_neighbors.add(city.id());
+      }
+    }
+    return set_neighbors.toArray();
   }
-  public double getDistance(long src, long dest);
+
+  public double getDistance(long src, long dest){
+    if(this.distance_in_use == "gps"){
+      return this.hasId(src).gpsDis(this.hasId(dest));
+    }
+    else if(this.distance_in_use == "manual"){
+      double dis = this.hasId(src).getManualDis(this.hasId(dest));
+      if(dis < 0) return Double.MAX_VALUE;
+      return dis;
+    }
+  }
 
 
   public Cities(){}
