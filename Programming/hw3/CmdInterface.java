@@ -52,6 +52,7 @@ abstract class Options{
 abstract class CmdStart extends Options{
   
   private boolean is_running = false;
+  private CityBrain cities = new CityBrain();
 
   public void setOptions() throws NoSuchMethodException{
     int key = 0;
@@ -79,25 +80,109 @@ abstract class CmdStart extends Options{
     this.is_running = false;
   }
 
-  public void loadCityFile(){}
+  public void loadCityFile(){
+    String notice = "Please input a file name containing the list of cities. " +
+                    "To return: type blank.;
+    Logging.stdout(notice);
+    String filename = Interface_Util.waitForValidFileName();
+    if(filename != null)
+      this.cities.loadCityFile(filename);
+  }
 
-  public void searchState(){}
+  public void searchState(){
+    String notice = "Please input a valid state name. To return: type blank.";
+    Logging.stdout(notice);
+    String statename = null;
+    do{
+      statename = Interface_Util.waitForString();
+      if(statename == "") return; 
+      if(this.cities.stateExists(statename))
+        break;
+      Logging.warn("State not found. Please input a valid state name." + 
+                   "To return: type blank.");
+    }while(true);
 
-  public void searchCity(){}
+    assert statename != null;
+    this.cities.showStateInfo(statename);
+  }
 
-  public void setCurrentCity(){}
+  public void searchCity(){
+    String notice = "Please input a valid city name. To return: type blank.";
+    Logging.stdout(notice);
+    String cityname = null;
+    do{
+      cityname = Interface_Util.waitForString();
+      if(cityname == "") return; 
+      if(this.cities.cityExists(cityname))
+        break;
+      Logging.warn("City not found. Please input a valid city name." + 
+                   "To return: type blank.");
+    }while(true);
 
-  public void showCurrentCity(){}
+    assert cityname != null;
+    this.cities.showCityInfo(statename);
+  }
 
-  public void gpsNeighbor(){}
+  public void setCurrentCity(){
+    String notice = "Please input a valid city id. To return: type blank.";
+    Logging.stdout(notice);
+    Long cityid = null;
+    do{
+      cityid = Interface_Util.waitForLong();
+      if(cityid == null) return;
+      if(this.cities.cityIdExists(cityid))
+        break;
+      Logging.warn("City not found. Please input a valid city id. " +
+                   "To return: type blank.");
+    }while(true);
+    assert cityid != null;
+    this.cities.setCurrentCity(cityid);
+  }
 
-  public void costNeighbor(){}
+  public void showCurrentCity(){
+    this.cities.showCurrentCity();
+  }
 
-  public void findPath(){}
+  public void gpsNeighbor(){
+    String notice = "Please type in the number of cloest neighbors to see: ";
+    Logging.stdout(notice);
+    Integer input = Interface_Util.waitForInt();
+    if(input != null && input > 0){
+      this.cities.gpsNeighbor(input);
+      return;
+    }
+    Logging.warn("Please type in a valid postive integer");
+  }
 
-  public void invoke(int key){
+  public void costNeighbor(){
+    String notice = "Please type in the number of cloest neighbors to see: ";
+    Logging.stdout(notice);
+    Integer input = Interface_Util.waitForInt();
+    if(input != null && input > 0){
+      this.cities.costNeighbor(input);
+      return;
+    }
+    Logging.warn("Please type in a valid postive integer");
+  }
+
+  public void findPath(){
+    String notice = "Please type in the id of the destination city.";
+    Logging.stdout(notice);
+    Long cityid = null;
+    do{
+      cityid = Interface_Util.waitForLong();
+      if(cityid == null) return;
+      if(this.cities.cityIdExists(cityid))
+        break;
+      Logging.warn("City not found. Please input a valid city id. " +
+                   "To return: type blank.");
+    }while(true);
+    this.cities.findPath(cityid);
+  }
+
+  public void invoke(Integer key){
     if(!this.options.containsKey(key)){
-      Logging.warn("Invalid Selection");
+      Logging.warn("Invalid choice!!");
       return;
     }
     try{
@@ -114,8 +199,12 @@ abstract class CmdStart extends Options{
       String notice = this.getOptionNotice() + 
                       "Please make your selection: ";
       Logging.stdout(notice);
-      int key = Interface_Util.waitForInt(this.getKeys(), notice);
-      this.invoke(key);
+      Integer key = Interface_Util.waitForInt(this.getKeys());
+      if(key != null)
+        this.invoke(key);
+      else{
+        Logging.warn("Invalid choice!!");
+      }
     }
   }
 
@@ -133,6 +222,20 @@ abstract class CmdStart extends Options{
 
 
 class Interface_Util{
+
+  public static String waitForValidFileName(){
+    /*Wait for user to input a valid file name */
+    Scanner scan = new Scanner(System.in);
+    do{
+      String name = Interface_Util.waitForString();
+      if(name == "") return null;
+      if(new File_util(name).fileCanRead()){
+        return new File_util(name).getAbsolutePath();
+      }
+      Logging.warn("Please type in a file name that is readable. " + 
+                   "To return: blank");
+    }while(true);
+  }
   
   public static int waitForIntInScale(int min, int max){
     assert min <= max;
@@ -147,25 +250,34 @@ class Interface_Util{
     return key;
   }
 
-  public static int waitForInt(){
-    return new Scanner(System.in).nextInt();
+  public static Integer waitForInt(){
+    try{
+      int ret = new Scanner(System.in).nextInt();
+      return ret;
+    } catch (InputMismatchException e){
+      Logging.warn("Please type in an integer." + e.getMessage());
+      e.printStackTrace();
+    }
+    return null;
   }
 
-  public static int waitForInt(Set<Integer> ints, String notice){
-    Scanner scan = new Scanner(System.in);
-    int input = -1;
-    do{
-      try{
-        input = scan.nextInt();
-        if(ints.contains(input)) return input;
-        Logging.warn("Invalid Choice:" + input);
-      }catch(InputMismatchException e){
-        Logging.warn("Please type in an integer." + input + e.toString());
-        System.exit(1);
-      } 
-      if(notice != null)
-        Logging.stdout(notice);
-    }while(true); 
+  public static Long waitForLong(){
+    try{
+      long ret = new Scanner(System.in).nextLong();
+      return ret;
+    } catch (InputMismatchException e){
+      Logging.warn("Please type in an integer." + e.getMessage());
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public static Integer waitForInt(Set<Integer> ints){
+    /* Wait until user input an value in ints, null otherwise*/
+    Integer input = this.waitForInt();
+    if(input != null && ints.contains(input))
+      return input;
+    return null;
   }
 
   public static String waitForString(){

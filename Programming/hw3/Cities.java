@@ -28,8 +28,18 @@ class City{
     this.id = City.nextId();
   }
 
+  public boolean equals(City b){
+    /*Returns true if city b is the same as this city. */
+    return this.name == b.name && this.state == b.state && this.lat == b.lat
+           && this.lng == b.lng;
+  }
+
   public long id(){
     return this.id;
+  }
+
+  public void clearEdges(){
+    this.edges.clear();
   }
 
   public void addEdge(City dest, double cost){
@@ -55,7 +65,31 @@ class City{
                          Double.parseDouble(b.lng));
   }
 
+  public String printInfo(){
+    return "ID: " + this.id + "  NAME: " + this.name + 
+           "  STATE: " + this.state + "  LAT: " + this.lat
+           + "  LNG: " + this.lng;
+  }
+
+  public List<String> printNeighbors(){
+    List<String> info = new LinkedList<String>();
+    for(City city : this.edges.keySet()){
+      String nei_info = city.printInfo() + "  DISTANCE: " + 
+                        this.getManualDis(city);
+      info.add(nei_info);
+    }
+    return info;
+  }
+
+  public String printAllInfo(){
+    String allInfo = this.printInfo();
+    List<String> nei_info = this.printNeighbors();
+    utilString.append("    ", nei_info);
+    return allInfo + "\n" + utilString.join(nei_info, "\n");
+  }
+
   public static long city_id = 0;
+  
   public static long nextId(){
     return ++ city_id;
   }
@@ -76,7 +110,7 @@ class City{
   }
 }
 
-public class Cities implements DijkstraInterface{
+public abstract class Cities implements DijkstraInterface{
   /* Class to store a list of cities, so that convinient for search */
   Map<Long, City> id_to_city = new HashMap<Long, City>();
   Map<String, Set<City>> name_to_city = new HashMap<String, Set<City>>();
@@ -92,6 +126,28 @@ public class Cities implements DijkstraInterface{
     if(!this.state_to_city.containsKey(a.state))
       this.state_to_city.put(a.state, new HashSet<City>());
     this.state_to_city.get(a.state).add(a);
+  }
+
+  void clear(){
+    this.id_to_city.clear();
+    this.name_to_city.clear();
+    this.state_to_city.clear();
+
+    Logging.info("Database cleared!!!!");
+  }
+
+  boolean contains(City a){
+    /*Returns true if a is already in the system. */
+    for(City city : this.withName(a.name)){
+      if(city.equals(a))
+        return true;
+    }
+    return false;
+  }
+
+  Set<City> allCities(){
+    /*Return a set of all cities. */
+    return this.id_to_city.values();
   }
 
   City hasId(long id){
@@ -118,6 +174,16 @@ public class Cities implements DijkstraInterface{
     return this.name_to_city.get(name);
   }
 
+  public void rebuildRandomTopology(){
+    /*Remove current topology and build a brand new random topology. */
+    for(City city : this.allCities()){
+      city.clearEdges();
+    }
+    for(City city : this.allCities()){
+      this.buildRandomConnection(city);
+    }
+  }
+
   public void buildRandomConnection(City src){
     // Build random connection for city src to cities here.
     // Return True if successful.
@@ -137,7 +203,7 @@ public class Cities implements DijkstraInterface{
     }
   }
 
-  public String distance_in_use = "gps";
+  private String distance_in_use = "gps";
 
   public void setGPSDis(){
     this.distance_in_use = "gps";
@@ -147,7 +213,8 @@ public class Cities implements DijkstraInterface{
     this.distance_in_use = "manual";
   }
 
-  /* The function of in DijkstraInterface to be implemented. */
+  /* The function in DijkstraInterface to be implemented. */
+
   public int numNodes(){
     /* Returns the total number of nodes in the graph */
     return this.id_to_city.size();
@@ -180,7 +247,103 @@ public class Cities implements DijkstraInterface{
     assert false;
     return -1.0;
   }
+  /*****************************************************************/
 
-
-  public Cities(){}
 }
+
+
+abstract class CityBrain extends Cities{
+  private Set<String> city_files = new HashSet<String>();
+  private Long current_city_id = null;
+ 
+  void clear(){
+    super.clear();
+    this.city_files.clear();
+    this.current_city_id = null;
+  }
+
+  void loadCityFile(String filename){
+    if(city_files.contains(filename)){
+      Logging.warn("Already loaded city file " + filename);
+      return;
+    }
+
+    File_util fu = new File_util(filename);
+    fu.openToRead();
+    String line = fu.readLine();
+    int num_cities = Integer.parseInt(line);
+    for(int i = 0; i < num_cities; i++){
+      String city_state[] = fu.readLine().split(", ");
+
+      String name = city_state[0];
+      String state = name;
+      if(city_state.length >= 2 && city_state[1] != "")
+        state = city_state[1];
+
+      String lat = fu.readLine();
+      String lng = fu.readLine();
+      assert lat != null && lat != "" && lng != null && lng != "";
+      City new_city = new City(name, state, lat, lng);
+      if(!this.contains(new_city)){
+        this.add(new_city);
+      }
+    }
+    assert this.numNodes() == num_cities; 
+    fu.close();
+  }
+
+  boolean stateExists(String statename){
+    return this.inState(statename).isEmpty() != null;
+  }
+
+  void showStateInfo(String statename){
+    Set<City> cities = this.inState(statename);
+    Logging.stdout("Cities in State " + statename + " are listed as:");
+    for(City city : cities){
+      Logging.stdout(city.printInfo());
+    }
+  }
+
+  boolean cityExists(String cityname){
+    return this.withName(cityname) != null;
+  }
+
+  boolean cityIdExists(Long id){
+    return this.hasId(id) != null;
+  }
+
+  void showCityInfo(String cityname){
+    Logging.stdout("Cities with name " + cityname + " are listed as: ");
+    for(City city : this.withName(cityname)){
+      Logging.stdout(city.printAllInfo());
+    }
+  }
+
+  void setCurrentCity(Long cityid){
+    assert this.cityIdExists(cityid);
+    this.current_city_id = cityid;
+  }
+
+  boolean isCurrentCitySet(){
+    if(this.current_city_id == null){
+      Logging.warn("Current city is not set. Please set up current city.");
+      return false;
+    }
+    return true;
+  }
+
+  void showCurrentCity(){
+    if(this.isCurrentCitySet())
+      Logging.stdout(this.hasId(this.current_city_id).printAllInfo());
+  }
+
+  void gpsNeighbor(Integer num){
+    if(!this.isCurrentCitySet()) return;
+    this.setGPSDis();
+  }
+
+  void costNeighbor(Integer num){}
+
+  void findPath(Long destid){}
+
+} 
