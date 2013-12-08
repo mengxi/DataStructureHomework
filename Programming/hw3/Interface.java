@@ -1,4 +1,4 @@
-package hw3_graph;
+package VirusHunter;
 
 import java.lang.String;
 import java.util.concurrent.Callable;

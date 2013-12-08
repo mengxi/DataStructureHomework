@@ -8,6 +8,10 @@ import java.lang.String;
 import java.lang.Double;
 import java.lang.Long;
 import java.lang.Math;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 class City{
   /* The class for one city */
@@ -19,8 +23,8 @@ class City{
   /* Stores the man-made dist information. */
   public Map<City, Double> edges = new HashMap<City, Double>();
 
-  public City(String name, String state, String lat, String lon){
-    this.name = name; this.state = state; this.lat = lat; this.lon = lon;
+  public City(String name, String state, String lat, String lng){
+    this.name = name; this.state = state; this.lat = lat; this.lng = lng;
     this.id = City.nextId();
   }
 
@@ -28,7 +32,7 @@ class City{
     return this.id;
   }
 
-  public addEdge(City dest, double cost){
+  public void addEdge(City dest, double cost){
     // Add directed link cost to City dest.
     this.edges.put(dest, cost);
   }
@@ -123,8 +127,8 @@ public class Cities implements DijkstraInterface{
     Set<Long> city_ids = new HashSet<Long>();
     city_ids.addAll(this.allIds());
     city_ids.remove(src.id);
-    Set<Long> neighbor_ids = myRandom.withoutReplacement(city_ids.toArray(),
-                                                      numEdges);
+    Set<Long> neighbor_ids = myRandom.withoutReplacement(
+        city_ids, numEdges);
     // Assign costs and build link.
     for(long nei_id: neighbor_ids){
       double cost = myRandom.nextDouble(100, 2000);
@@ -149,7 +153,7 @@ public class Cities implements DijkstraInterface{
     return this.id_to_city.size();
   }
 
-  public long[] getNeighbors(long sourceId){
+  public Set<Long> getNeighbors(long sourceId){
     /* return a list of neighbor ids of the source node */
     Set<Long> set_neighbors = new HashSet<Long>();
     if(this.distance_in_use == "gps"){
@@ -161,7 +165,7 @@ public class Cities implements DijkstraInterface{
         set_neighbors.add(city.id());
       }
     }
-    return set_neighbors.toArray();
+    return set_neighbors;
   }
 
   public double getDistance(long src, long dest){
@@ -173,6 +177,8 @@ public class Cities implements DijkstraInterface{
       if(dis < 0) return Double.MAX_VALUE;
       return dis;
     }
+    assert false;
+    return -1.0;
   }
 
 

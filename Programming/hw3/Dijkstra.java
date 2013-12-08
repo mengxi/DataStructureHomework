@@ -2,6 +2,9 @@
  * Usage: classes just have to extend interface DijkstraInterface, 
  * then call the function find in class Dijkstra.
  * */
+
+package hw3_graph;
+
 import java.lang.Object;
 import java.lang.Long;
 import java.lang.Integer;
@@ -53,7 +56,7 @@ class IntegerMap<T>{
 
 interface DijkstraInterface{
   public int numNodes();
-  public long[] getNeighbors(long id);
+  public Set<Long> getNeighbors(long id);
   public double getDistance(long src, long dest);
 }
 
