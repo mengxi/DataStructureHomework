@@ -19,6 +19,6 @@ public class MyGraphMap13{
   }
 
   public MyGraphMap13(){
-    this.__init__()
+    this.__init__();
   }
 }

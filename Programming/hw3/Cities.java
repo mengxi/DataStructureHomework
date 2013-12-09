@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
+import java.util.LinkedList;
 
 class City{
   /* The class for one city */
@@ -337,13 +339,58 @@ abstract class CityBrain extends Cities{
       Logging.stdout(this.hasId(this.current_city_id).printAllInfo());
   }
 
-  void gpsNeighbor(Integer num){
+  private void neighbor(int num, boolean gps){
     if(!this.isCurrentCitySet()) return;
-    this.setGPSDis();
+    City currentCity = this.hasId(this.current_city_id);
+    if(gps) 
+      this.setGPSDis();
+    else this.setManualDis();
+    
+    Map<Long, PathResult> result = new Dijkstra().find(this.current_city_id,
+                                                       num, this);
+    Logging.info("The " + num + " closest neighbors of " +
+                 currentCity.printInfo() + ":");
+    for(long id : result.keySet()){
+      Logging.stdout("DISTANCE: " + result.get(id).len() + "  " + 
+                     this.hasId(id).printInfo());
+    }
+
   }
 
-  void costNeighbor(Integer num){}
+  void gpsNeighbor(int num){
+    this.neighbor(num, true);
+  }
 
-  void findPath(Long destid){}
+  void costNeighbor(int num){
+    this.neighbor(num, false);
+  }
+
+  void findPath(long destid){
+    /* Find path using direct weight. */
+    if(!this.isCurrentCitySet()) return;
+    City currentCity = this.hasId(this.current_city_id);
+    this.setManualDis();
+    Map<Long, PathResult> result = new Dijkstra().find(this.current_city_id,
+                                                       this);
+    Logging.info(String.format("The shortest path from [%s] to [%s] : ",
+                               currentCity.printInfo(),
+                               this.hasId(destid).printInfo()));
+    for(long id : this.parsePathFromResult(result, destid)){
+      Logging.stdout("DISTANCE: " + result.get(id).len() + "  " + 
+                     this.hasId(id).printInfo());
+    } 
+  }
+
+  private List<Long> parsePathFromResult(Map<Long, PathResult> result,
+                                         long destid){
+    assert result.containsKey(destid) && isCurrentCitySet();
+    LinkedList<Long> path = new LinkedList<Long>();
+    long id = destid;
+    while(id != this.current_city_id){
+      path.addFirst(id);
+      id = result.get(id).prev();
+    }
+    return path;
+  }
 
 } 

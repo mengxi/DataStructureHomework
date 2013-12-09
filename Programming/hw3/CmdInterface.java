@@ -82,7 +82,7 @@ abstract class CmdStart extends Options{
 
   public void loadCityFile(){
     String notice = "Please input a file name containing the list of cities. " +
-                    "To return: type blank.;
+                    "To return: type blank.";
     Logging.stdout(notice);
     String filename = Interface_Util.waitForValidFileName();
     if(filename != null)
@@ -297,10 +297,6 @@ class Interface_Util{
 }
 
 
-public class CmdInterface extends CmdStart{
-  public static void main(String [] args){
-    new CmdInterface().start();
-  }
-}
+public class CmdInterface extends CmdStart{}
 
 
