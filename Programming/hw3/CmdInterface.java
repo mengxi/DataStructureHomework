@@ -95,7 +95,7 @@ abstract class CmdStart extends Options{
     String statename = null;
     do{
       statename = Interface_Util.waitForString();
-      if(statename == "") return; 
+      if(statename.isEmpty()) return; 
       if(this.cities.stateExists(statename))
         break;
       Logging.warn("State not found. Please input a valid state name." + 
@@ -112,7 +112,7 @@ abstract class CmdStart extends Options{
     String cityname = null;
     do{
       cityname = Interface_Util.waitForString();
-      if(cityname == "") return; 
+      if(cityname.isEmpty()) return; 
       if(this.cities.cityExists(cityname))
         break;
       Logging.warn("City not found. Please input a valid city name." + 
@@ -120,7 +120,7 @@ abstract class CmdStart extends Options{
     }while(true);
 
     assert cityname != null;
-    this.cities.showCityInfo(statename);
+    this.cities.showCityInfo(cityname);
   }
 
   public void setCurrentCity(){
@@ -228,7 +228,7 @@ class Interface_Util{
     Scanner scan = new Scanner(System.in);
     do{
       String name = Interface_Util.waitForString();
-      if(name == "") return null;
+      if(name.isEmpty()) return null;
       if(new File_util(name).fileCanRead()){
         return new File_util(name).getAbsolutePath();
       }
@@ -255,7 +255,7 @@ class Interface_Util{
       int ret = new Scanner(System.in).nextInt();
       return ret;
     } catch (InputMismatchException e){
-      Logging.warn("Please type in an integer." + e.getMessage());
+      Logging.warn("Please type in an integer: " + e.getMessage());
       e.printStackTrace();
     }
     return null;
@@ -266,7 +266,7 @@ class Interface_Util{
       long ret = new Scanner(System.in).nextLong();
       return ret;
     } catch (InputMismatchException e){
-      Logging.warn("Please type in an integer." + e.getMessage());
+      Logging.warn("Please type in an integer: " + e.getMessage());
       e.printStackTrace();
     }
     return null;
@@ -274,7 +274,7 @@ class Interface_Util{
 
   public static Integer waitForInt(Set<Integer> ints){
     /* Wait until user input an value in ints, null otherwise*/
-    Integer input = this.waitForInt();
+    Integer input = waitForInt();
     if(input != null && ints.contains(input))
       return input;
     return null;

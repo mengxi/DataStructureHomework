@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.LinkedList;
 
@@ -76,8 +77,8 @@ class City{
   public List<String> printNeighbors(){
     List<String> info = new LinkedList<String>();
     for(City city : this.edges.keySet()){
-      String nei_info = city.printInfo() + "  DISTANCE: " + 
-                        this.getManualDis(city);
+      String nei_info = "DISTANCE: " + this.getManualDis(city) + " "+
+                        city.printInfo();
       info.add(nei_info);
     }
     return info;
@@ -86,7 +87,7 @@ class City{
   public String printAllInfo(){
     String allInfo = this.printInfo();
     List<String> nei_info = this.printNeighbors();
-    utilString.append("    ", nei_info);
+    nei_info = utilString.append("---->", nei_info);
     return allInfo + "\n" + utilString.join(nei_info, "\n");
   }
 
@@ -112,7 +113,7 @@ class City{
   }
 }
 
-public abstract class Cities implements DijkstraInterface{
+public class Cities implements DijkstraInterface{
   /* Class to store a list of cities, so that convinient for search */
   Map<Long, City> id_to_city = new HashMap<Long, City>();
   Map<String, Set<City>> name_to_city = new HashMap<String, Set<City>>();
@@ -140,14 +141,16 @@ public abstract class Cities implements DijkstraInterface{
 
   boolean contains(City a){
     /*Returns true if a is already in the system. */
-    for(City city : this.withName(a.name)){
+    Set<City> cities = this.withName(a.name);
+    if(cities == null) return false;
+    for(City city : cities){
       if(city.equals(a))
         return true;
     }
     return false;
   }
 
-  Set<City> allCities(){
+  Collection<City> allCities(){
     /*Return a set of all cities. */
     return this.id_to_city.values();
   }
@@ -254,7 +257,7 @@ public abstract class Cities implements DijkstraInterface{
 }
 
 
-abstract class CityBrain extends Cities{
+class CityBrain extends Cities{
   private Set<String> city_files = new HashSet<String>();
   private Long current_city_id = null;
  
@@ -292,15 +295,16 @@ abstract class CityBrain extends Cities{
     }
     assert this.numNodes() == num_cities; 
     fu.close();
+    this.rebuildRandomTopology();
   }
 
   boolean stateExists(String statename){
-    return this.inState(statename).isEmpty() != null;
+    return this.inState(statename)!=null;
   }
 
   void showStateInfo(String statename){
     Set<City> cities = this.inState(statename);
-    Logging.stdout("Cities in State " + statename + " are listed as:");
+    Logging.info("Cities in State " + statename + " are listed as:");
     for(City city : cities){
       Logging.stdout(city.printInfo());
     }
@@ -315,7 +319,7 @@ abstract class CityBrain extends Cities{
   }
 
   void showCityInfo(String cityname){
-    Logging.stdout("Cities with name " + cityname + " are listed as: ");
+    Logging.info("Cities with name " + cityname + " are listed as: ");
     for(City city : this.withName(cityname)){
       Logging.stdout(city.printAllInfo());
     }
@@ -388,7 +392,7 @@ abstract class CityBrain extends Cities{
     long id = destid;
     while(id != this.current_city_id){
       path.addFirst(id);
-      id = result.get(id).prev();
+      id = result.get(id).pred();
     }
     return path;
   }

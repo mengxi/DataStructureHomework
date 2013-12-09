@@ -24,23 +24,33 @@ public class File_util
   private BufferedReader reader = null;
 
   void openToRead(){
-    this.reader = new BufferedReader(new FileReader(this.location));
+    try{
+      this.reader = new BufferedReader(new FileReader(this.location));
+    }catch(IOException e){
+      e.printStackTrace();
+      System.exit(1);
+    }
   }
 
   void close(){
-    this.reader.close();
+    try{
+      this.reader.close();
+    }catch (IOException e){
+      e.printStackTrace();
+    }
   }
 
   String readLine(){
     /* Return a line from reader */
     try{
-      line = this.reader.readLine();
+      String line = this.reader.readLine();
       return line;
     } catch (IOException e){
       Logging.error("File " + this.location + " read error! " + e.getMessage());
       e.printStackTrace();
       System.exit(1);
     }
+    return null;
   }
 
   public String read(){
@@ -100,7 +110,7 @@ public class File_util
 
  public boolean fileCanRead(){
    File file = new File(this.location);
-   return this.checkFileCanRead(file);
+   return this.fileCanRead(file);
  }
 
  public String getAbsolutePath(){

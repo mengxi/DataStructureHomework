@@ -61,7 +61,7 @@ interface DijkstraInterface{
 }
 
 
-public abstract class Dijkstra {
+public class Dijkstra {
 
   public int fetch_cloest_neighbor(Set<Integer> nodes, double[] dist){
     /* Find the node id in nodes with the smallest dist value */
